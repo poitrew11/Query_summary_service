@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  chat-summarize:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
