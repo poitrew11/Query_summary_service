@@ -111,5 +111,5 @@ async def summarize(input_data: SummaryInput):
             request_id=input_data.request_id,
             chat_id=input_data.chat_id,
             user_id=input_data.user_id,
-            name= "Service unavailable now"
+            name= "Service unavailable now" # Should be a lang plug?
         )
