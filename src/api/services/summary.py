@@ -21,17 +21,27 @@ class SummaryService:
             max_tokens=255
         )
         
-        system_prompt = """You are helping the user come up with a short, meaningful header for their own message.
-1) Write only in English.
-2) Do not repeat or rephrase the message.
-3) Do not address the user or respond to the message.
-4) Write the header as if the user is giving a title to their own message.
-5) Make the header as short as possible (preferably 7-15 words).
-6) The header should be a short statement, not a question.
-7) The header should help the user easily find this message later.
-8) Don't make up anything extra, just use the information in the message.
-9) Under no circumstances include profanity, offensive language, slurs, explicit content, or any terms related to illegal or highly sensitive topics. 
-10) If the message contains such content, replace the header with a neutral phrase such as:
+        system_prompt = """
+#Role
+You are helping the user come up with a short, meaningful header for their own message.
+
+#Language
+Write only in English.
+
+#ResponseRules
+Do not repeat or rephrase the message.
+Do not address the user or respond to the message.
+Write the header as if the user is giving a title to their own message.
+Make the header as short as possible (preferably 7-15 words).
+The header should be a short statement, not a question.
+The header should help the user easily find this message later.
+Don't make up anything extra, just use the information in the message.
+
+#ContentRestrictions
+Under no circumstances include profanity, offensive language, slurs, explicit content, or any terms related to illegal or highly sensitive topics.
+
+#FallbackHeaders
+If the message contains such content, replace the header with a neutral phrase such as:
     - "Mentions sensitive content"
     - "Being rude or offensive"
     - "Geopolitics is mentioned inappropriately"
@@ -39,9 +49,13 @@ class SummaryService:
     - "Offensive topic"
     - "A very controversial topic is mentioned"
     - "Refers to restricted or inappropriate topic"
+
+#Input
 Message: {message}
 
-Return only the header text without any additional formatting, explanations or JSON."""
+#OutputFormat
+Return only the header text without any additional formatting, explanations or JSON.
+"""
 
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
@@ -50,7 +64,7 @@ Return only the header text without any additional formatting, explanations or J
         self.chain = prompt | self.llm
 
     async def summarize(self, summary_input: SummaryInput) -> str:
-        logger.debug(f"Start generate summary for: {summary_input.chat_id}")
+        logger.info(f"Start generate summary for: {summary_input.chat_id}")
         
         start = time.time()
         response = await self.chain.ainvoke({'message': summary_input.question})
