@@ -64,6 +64,9 @@ Return only the header text without any additional formatting, explanations or J
         self.chain = prompt | self.llm
 
     async def summarize(self, summary_input: SummaryInput) -> str:
+        """
+        Helper summarize function
+        """
         logger.info(f"Start generate summary for: {summary_input.chat_id}")
         
         start = time.time()
@@ -75,19 +78,24 @@ Return only the header text without any additional formatting, explanations or J
             output = str(response)
             
         output = output.strip()
-        logger.debug(f"Summary generated in {time.time() - start:.2f}s")
+        logger.info(f"Summary generated in {time.time() - start:.2f}s, generated summary: {output}")
         return output
 
 summary_service = SummaryService()
 
 
-@summary_router.post("/summarize", response_model=SummaryOutput)
+@summary_router.post(
+                    "/summarize", 
+                     response_model=SummaryOutput,
+                     description="Returns a concise summary to help user find this message later",
+                     summary="Generate a short header for a chat message"
+                     )
 async def summarize(input_data: SummaryInput):
     """
     Generate a summary/header for a chat message.
     """
     try:
-        logger.debug(f"Processing summarize request for chat_id: {input_data.chat_id}")
+        logger.info(f"Processing summarize request for chat_id: {input_data.chat_id}")
         
         summary_text = await summary_service.summarize(input_data)
         
@@ -97,6 +105,11 @@ async def summarize(input_data: SummaryInput):
             user_id=input_data.user_id,
             name=summary_text
         )
-    except Exception as e:
+    except Exception as e: # To Do# What Exception?
         logger.error(f"Error processing summarize request: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return SummaryOutput(
+            request_id=input_data.request_id,
+            chat_id=input_data.chat_id,
+            user_id=input_data.user_id,
+            name= "Service unavailable now"
+        )
